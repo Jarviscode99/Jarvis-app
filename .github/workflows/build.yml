@@ -24,17 +24,24 @@ jobs:
         pip install --user --upgrade setuptools
         pip install buildozer
 
-    - name: Fix Buildozer Spec and Accept Licenses
+    - name: Force Fix Buildozer Spec for API 33
+      run: |
+        if [ -f buildozer.spec ]; then
+          sed -i 's/android.api =.*/android.api = 33/g' buildozer.spec
+          sed -i 's/#android.api =.*/android.api = 33/g' buildozer.spec
+          sed -i 's/android.minapi =.*/android.minapi = 21/g' buildozer.spec
+          sed -i 's/#android.minapi =.*/android.minapi = 21/g' buildozer.spec
+          sed -i 's/android.build_tools_version =.*/android.build_tools_version = 33.0.2/g' buildozer.spec
+          sed -i 's/#android.build_tools_version =.*/android.build_tools_version = 33.0.2/g' buildozer.spec
+        fi
+
+    - name: Pre-accept Android SDK licenses
       run: |
         mkdir -p ~/.android
-        echo "### License accepted" > ~/.android/repositories.cfg
-        # Automatically force lower SDK and build tools version to avoid version 37 error
-        if [ -f buildozer.spec ]; then
-          sed -i 's/#android.api =.*/android.api = 33/g' buildozer.spec
-          sed -i 's/android.api =.*/android.api = 33/g' buildozer.spec
-          sed -i 's/#android.minapi =.*/android.minapi = 21/g' buildozer.spec
-          sed -i 's/android.minapi =.*/android.minapi = 21/g' buildozer.spec
-        fi
+        echo "24333f8a43b681621c9b6a4566bcd1f1f9cwqy" > ~/.android/repositories.cfg
+        mkdir -p android/sdk/licenses
+        echo -e "\n84831b8509936563e2247b539d1f14ddee044957" > android/sdk/licenses/android-sdk-license
+        echo -e "\n24333f8a43b681621c9b6a4566bcd1f1f9cwqy" >> android/sdk/licenses/android-sdk-license
 
     - name: Build APK with Buildozer
       run: |
@@ -45,4 +52,3 @@ jobs:
       with:
         name: package
         path: bin/*.apk
-# Trigger build
