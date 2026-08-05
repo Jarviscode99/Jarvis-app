@@ -24,9 +24,14 @@ jobs:
         pip install --user --upgrade setuptools
         pip install buildozer
 
+    - name: Accept Android Licenses
+      run: |
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+
     - name: Build APK with Buildozer
       run: |
-        buildozer -v android debug
+        yes | buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
