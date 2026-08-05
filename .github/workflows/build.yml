@@ -19,10 +19,21 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev libldns-dev cython3 git zip unzip
+        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev libldns-dev cython3 git zip unzip openjdk-17-jdk
         pip install --upgrade pip
         pip install --user --upgrade setuptools
         pip install buildozer
+
+    - name: Pre-install Android SDK Command-line Tools
+      run: |
+        mkdir -p ~/.buildozer/android/platform/android-sdk
+        cd ~/.buildozer/android/platform/android-sdk
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+        unzip -q cmdline-tools.zip
+        mkdir -p cmdline-tools/latest
+        mv cmdline-tools/bin cmdline-tools/latest/ || true
+        mv cmdline-tools/lib cmdline-tools/latest/ || true
+        rm cmdline-tools.zip
 
     - name: Force Fix Buildozer Spec for API 33
       run: |
@@ -35,18 +46,13 @@ jobs:
 
     - name: Pre-accept Android SDK licenses
       run: |
-        mkdir -p ~/.android
-        echo "24333f8a43b681621c9b6a4566bcd1f1f9cwqy" > ~/.android/repositories.cfg
-        mkdir -p android/sdk/licenses
-        echo -e "\n84831b8509936563e2247b539d1f14ddee044957" > android/sdk/licenses/android-sdk-license
-        echo -e "\n24333f8a43b681621c9b6a4566bcd1f1f9cwqy" >> android/sdk/licenses/android-sdk-license
-        # Also auto-accept licenses via yes command properly piped to buildozer
-        mkdir -p ~/.buildozer/android/platform/android-sdk/licenses/
+        mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
         echo -e "\n84831b8509936563e2247b539d1f14ddee044957" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+        echo -e "\n24333f8a43b681621c9b6a4566bcd1f1f9cwqy" >> ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 
     - name: Build APK with Buildozer
       run: |
-        echo y | buildozer -v android debug
+        buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
