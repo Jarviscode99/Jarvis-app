@@ -24,11 +24,16 @@ jobs:
         pip install --user --upgrade setuptools
         pip install buildozer
 
+    - name: Pre-accept Android SDK licenses
+      run: |
+        mkdir -p ~/.android
+        echo "24333f8a43b681621c9b6a4566bcd1f1f9cwqy" > ~/.android/repositories.cfg
+        mkdir -p android/sdk/licenses
+        echo -e "\n84831b8509936563e2247b539d1f14ddee044957" > android/sdk/licenses/android-sdk-license
+        echo -e "\n24333f8a43b681621c9b6a4566bcd1f1f9cwqy" >> android/sdk/licenses/android-sdk-license
+
     - name: Build APK with Buildozer
       run: |
-        # Accept SDK licenses automatically without broken pipe
-        mkdir -p ~/.android
-        echo "### License accepted" > ~/.android/repositories.cfg
         buildozer -v android debug
 
     - name: Upload APK
@@ -36,4 +41,3 @@ jobs:
       with:
         name: package
         path: bin/*.apk
-
