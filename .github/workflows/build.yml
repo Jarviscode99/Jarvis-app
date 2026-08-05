@@ -24,19 +24,14 @@ jobs:
         pip install --user --upgrade setuptools
         pip install buildozer
 
-    - name: Nuke Version 37 and Force API 33
+    - name: Force Fix Buildozer Spec for API 33
       run: |
-        # Force buildozer.spec values
         if [ -f buildozer.spec ]; then
           sed -i 's/android.api =.*/android.api = 33/g' buildozer.spec
           sed -i 's/#android.api =.*/android.api = 33/g' buildozer.spec
           sed -i 's/android.minapi =.*/android.minapi = 21/g' buildozer.spec
           sed -i 's/#android.minapi =.*/android.minapi = 21/g' buildozer.spec
-          sed -i 's/android.build_tools_version =.*/android.build_tools_version = 33.0.2/g' buildozer.spec
-          sed -i 's/#android.build_tools_version =.*/android.build_tools_version = 33.0.2/g' buildozer.spec
         fi
-        # Remove any default build-tools 37 if cached or pre-downloaded
-        rm -rf ~/.buildozer/android/platform/android-sdk/build-tools/37*
 
     - name: Pre-accept Android SDK licenses
       run: |
@@ -45,10 +40,13 @@ jobs:
         mkdir -p android/sdk/licenses
         echo -e "\n84831b8509936563e2247b539d1f14ddee044957" > android/sdk/licenses/android-sdk-license
         echo -e "\n24333f8a43b681621c9b6a4566bcd1f1f9cwqy" >> android/sdk/licenses/android-sdk-license
+        # Also auto-accept licenses via yes command properly piped to buildozer
+        mkdir -p ~/.buildozer/android/platform/android-sdk/licenses/
+        echo -e "\n84831b8509936563e2247b539d1f14ddee044957" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 
     - name: Build APK with Buildozer
       run: |
-         buildozer -v android debug
+        echo y | buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
